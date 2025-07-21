@@ -4,6 +4,7 @@ import { ItemModel } from "../../../../utils/schemaModels"
 const deleteItem = async(req, res) => {
     try{
         await connectDB()
+        console.log(req.query.id)
         await ItemModel.deleteOne({_id: req.query.id})
         return res.status(200).json({message: "アイテム削除成功"})
     }catch(err){
