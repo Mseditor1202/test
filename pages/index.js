@@ -6,7 +6,7 @@ const ReadAllItems = (props) => {
     <div>
       <div>
         {props.allItems.map((item) => (
-          <Link href="" key={item._id}>
+          <Link href={`/item/${item._id}`} key={item._id}>
               <Image
                 src={item.image}
                 width="750"
