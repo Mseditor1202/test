@@ -1,7 +1,6 @@
 import Image from "next/image";
 
 const ReadSingleItem = (props) => {
-  console.log(props)
   return (
     <div>
       <div>
