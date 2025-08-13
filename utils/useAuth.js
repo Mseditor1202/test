@@ -1,39 +1,30 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
+import jwt from "jsonwebtoken"
+
+const secret_key = "nextmarket"
 
 const useAuth = () => {
-  const [loginUser, setLoginUser] = useState(null);
+  const [loginUser, setLoginUser] = useState("");
   const router = useRouter();
 
   useEffect(() => {
-    try {
-      const token =
-        typeof window !== "undefined" ? localStorage.getItem("token") : null;
-
+    const token = localStorage.getItem("token");
       if (!token) {
-        router.replace("/user/login"); // pushよりreplace
-        return;                        // ← 超重要：早期return
-      }
-
-      // verifyはしない。payloadだけ読む（本検証はAPIで）
-      const p = token.split(".")[1];
-      const payload = p ? JSON.parse(atob(p)) : null;
-
-      // exp（有効期限）を使っているならチェック
-      if (!payload || (payload.exp && Date.now() / 1000 > payload.exp)) {
-        localStorage.removeItem("token");
-        router.replace("/user/login");
+        router.push("/user/login");
         return;
       }
 
-      setLoginUser(payload.email ?? null);
-    } catch {
-      localStorage.removeItem("token");
-      router.replace("/user/login");
-    }
-  }, [router]);
+      try {
+        const decoded = jwt.verify(token,secret_key);
+        setLoginUser(decoded.email)
+      }catch(error){
+        localStorage.removeItem("token");
+        router.push("/user/login");
+      }
+  },[router]);
 
-  return loginUser;
-};
+  return loginUser
+}
 
-export default useAuth;
+export default useAuth

@@ -1,7 +1,8 @@
 import { useState }from "react"
 import useAuth from "../../utils/useAuth"
 
-const CreateItem = () =>{
+const CreateItem = () => {
+
 const [title,setTitle] = useState("")
 const [price,setPrice] = useState("")
 const [image,setImage] = useState("")
@@ -24,15 +25,15 @@ const handleSubmit = async(e) => {
                 description:description
             })
         })
-        const jsonDate = await response.json()
-        alert(jsonDate.message)
+        const jsonData = await response.json()
+        alert(jsonData.message)
     }catch(err){
         alert("アイテム作成失敗")
     }
-}
+};
 
-    const loginUser = useAuth()
-    console.log(loginUser)
+
+
     return(
         <div>
             <h1>アイテム作成</h1>
