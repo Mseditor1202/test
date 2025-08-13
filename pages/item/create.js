@@ -3,8 +3,6 @@ import useAuth from "../../utils/useAuth"
 
 const CreateItem = () => {
     const { user, loading } = useAuth();
-    if (loading) return null;
-    if (!user) return null;
 
     const [title,setTitle] = useState("")
     const [price,setPrice] = useState("")
