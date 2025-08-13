@@ -5,7 +5,7 @@ const ReadAllItems = (props) => {
   return (
     <div>
       <div>
-        {props.allItems.map((item) => (
+        {props.allItems.map(item => 
           <Link href={`/item/${item._id}`} key={item._id}>
               <Image
                 src={item.image}
@@ -19,7 +19,7 @@ const ReadAllItems = (props) => {
                 <p>{item.description.substring(0, 80)}...</p>
               </div>
           </Link>
-        ))}
+        )}
       </div>
     </div>
   );
