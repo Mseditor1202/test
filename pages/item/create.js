@@ -2,11 +2,14 @@ import { useState }from "react"
 import useAuth from "../../utils/useAuth"
 
 const CreateItem = () => {
+    const { user, loading } = useAuth();
+    if (loading) return null;
+    if (!user) return null;
 
-const [title,setTitle] = useState("")
-const [price,setPrice] = useState("")
-const [image,setImage] = useState("")
-const [description,setDescription] = useState("")
+    const [title,setTitle] = useState("")
+    const [price,setPrice] = useState("")
+    const [image,setImage] = useState("")
+    const [description,setDescription] = useState("")
  
 const handleSubmit = async(e) => {
     e.preventDefault()
@@ -16,23 +19,21 @@ const handleSubmit = async(e) => {
             headers:{
                 "Accept":"application/json",
                 "Content-Type":"application/json",
-                "authorization":`Bearer ${localStorage.getItem("token")}`
+                "authorization":`Bearer ${localStorage.getItem("token")}`,
             },
             body:JSON.stringify({
                 title:title,
                 price:price,
                 image:image,
                 description:description
-            })
-        })
-        const jsonData = await response.json()
-        alert(jsonData.message)
-    }catch(err){
+            }),
+        });
+        const jsonData = await res.json();
+        alert(jsonData.message);
+    }catch{
         alert("アイテム作成失敗")
     }
 };
-
-
 
     return(
         <div>

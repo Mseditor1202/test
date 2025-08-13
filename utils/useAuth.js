@@ -1,30 +1,29 @@
-import { useState, useEffect } from "react";
+import { useState,useEffect } from "react";
 import { useRouter } from "next/router";
-import jwt from "jsonwebtoken"
+import jwt from "jsonwebtoken";
 
-const secret_key = "nextmarket"
+const secret_key = "nextmarket";
 
 const useAuth = () => {
-  const [loginUser, setLoginUser] = useState("");
-  const router = useRouter();
+    const [loginUser, setLoginUser] = useState("");
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-      if (!token) {
-        router.push("/user/login");
-        return;
-      }
+    const router = useRouter();
 
-      try {
-        const decoded = jwt.verify(token,secret_key);
-        setLoginUser(decoded.email)
-      }catch(error){
-        localStorage.removeItem("token");
-        router.push("/user/login");
-      }
-  },[router]);
+    useEffect(() => {
+        const token = localStorage.getItem("token");
 
-  return loginUser
-}
+        if(!token) {
+            router.replace("/user/login");
+        }
 
-export default useAuth
+        try{
+            const decoded = jwt.verify(token, secret_key);
+            setLoginUser(decoded.email)
+        }catch(error){
+            router.replace("/user/login");
+        }
+    },[router])
+    return loginUser
+    }
+
+    export default useAuth;
