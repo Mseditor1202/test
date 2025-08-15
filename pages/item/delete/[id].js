@@ -1,7 +1,9 @@
 
 import Image from "next/image"
+import useAuth from "../../../utils/useAuth"
 
 const DeleteItem = (props) => {
+  const { user, loading } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -15,13 +17,19 @@ const DeleteItem = (props) => {
         },
       });
       const jsonData = await response.json();
+      if (!response.ok) throw new Error(jsonData?.message || "削除に失敗しました")
       alert(jsonData.message);
     } catch (err) {
-      alert("アイテム削除失敗");
+      alert("アイテム削除に失敗しました");
     }
   };
 
-  return (
+  if (loading) return null;
+
+  if (user?.email !== props.singleItem.email) {
+    return <h1>権限がありません</h1>;
+  }
+    return (
     <div>
       <h1>アイテム削除</h1>
       <form onSubmit={handleSubmit}>

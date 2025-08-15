@@ -1,16 +1,25 @@
 import { useState }from "react"
-import useAuth from "../../utils/useAuth"
+import useAuth from "../../utils/useAuth";
 
 const CreateItem = () => {
     const { user, loading } = useAuth();
-
     const [title,setTitle] = useState("")
     const [price,setPrice] = useState("")
     const [image,setImage] = useState("")
     const [description,setDescription] = useState("")
+
+     if (loading) return <p>読み込み中...</p>;
+     if (!user?.email) return null; // useAuth 側でログインに誘導済み
  
 const handleSubmit = async(e) => {
     e.preventDefault()
+    
+    const token = localStorage.getItem("token");
+    if (!token || !user?.email) {
+        alert("ログインが必要です");
+        return;
+    }
+
     try{
         const response = await fetch("http://localhost:3000/api/item/create",{
             method:"POST",
@@ -26,7 +35,7 @@ const handleSubmit = async(e) => {
                 description:description
             }),
         });
-        const jsonData = await res.json();
+        const jsonData = await response.json();
         alert(jsonData.message);
     }catch{
         alert("アイテム作成失敗")
@@ -46,6 +55,6 @@ const handleSubmit = async(e) => {
             </form>
         </div>
     )
-}   
+  } 
 
 export default CreateItem

@@ -1,6 +1,5 @@
 
 import jwt from"jsonwebtoken"
-
 const secret_key = "nextmarket"
 
 const auth = (handler) => {
@@ -8,8 +7,9 @@ const auth = (handler) => {
         if(req.method === "GET"){
             return handler(req,res)
         }
-
-        const token = await req.headers.authorization?.split(' ')[1]
+        const authHeader = req.headers.authorization || "";
+        const parts = authHeader.split(" ");
+        const token =  parts.length === 2 && parts[0] === "Bearer" ? parts[1] : null;
 
         if(!token){
             return res.status(401).json({message:"トークンがありません"})
@@ -17,7 +17,10 @@ const auth = (handler) => {
 
         try{
             const decoded = jwt.verify(token,secret_key)
-            req.body.email = decoded.email
+            if(!decoded.email){
+                return res.status(401).json({message:"トークンが正しくないので、ログインしてください"})
+            }
+            req.user = { email: decoded.email };
             return handler(req,res)
         }catch(err){
             return res.status(401).json({message:"トークンが正しくないので、ログインしてください"})
