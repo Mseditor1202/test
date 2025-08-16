@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Head from "next/head";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -7,7 +8,7 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault()
     try {
-      const response = await fetch("http://localhost:3000/api/user/login", {
+      const response = await fetch("https://test-phi-one-53.vercel.app//api/user/login", {
         method: "POST",
         headers: {
           "Accept": "application/json",
@@ -28,7 +29,8 @@ const Login = () => {
 
   return (
     <div>
-      <h1>ログイン</h1>
+      <Head><title>ログイン</title></Head>
+      <h1 className="page-title">ログイン</h1>
       <form onSubmit={handleSubmit}>
         <input
           value={email}

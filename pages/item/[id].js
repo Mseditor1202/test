@@ -1,9 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
+import Head from "next/head";
 
 const ReadSingleItem = (props) => {
   return (
-    <div>
+    <div className="grid-container-si">
+      <Head><title>{props.singleItem.title}</title></Head>
       <div>
         <h1>個別アイテムページ</h1>
         <Image
@@ -29,7 +31,7 @@ const ReadSingleItem = (props) => {
 
 export const getServerSideProps = async (context) => {
   const response = await fetch(
-    `http://localhost:3000/api/item/${context.query.id}`
+    `https://test-phi-one-53.vercel.app//api/item/${context.query.id}`
   );
   const singleItem = await response.json();
 

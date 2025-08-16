@@ -1,5 +1,6 @@
 import { useState }from "react"
 import useAuth from "../../utils/useAuth";
+import Head from "next/head";
 
 const CreateItem = () => {
     const { user, loading } = useAuth();
@@ -21,7 +22,7 @@ const handleSubmit = async(e) => {
     }
 
     try{
-        const response = await fetch("http://localhost:3000/api/item/create",{
+        const response = await fetch("https://test-phi-one-53.vercel.app//api/item/create",{
             method:"POST",
             headers:{
                 "Accept":"application/json",
@@ -44,8 +45,8 @@ const handleSubmit = async(e) => {
 
     return(
         <div>
-            <h1>アイテム作成</h1>
-
+            <Head><title>アイテム作成</title></Head>
+            <h1 className="page-title">アイテム作成</h1>
             <form onSubmit={handleSubmit}>
                 <input value={title}onChange={(e)=>setTitle(e.target.value)} type="text" name="title" placeholder="アイテム名"required/>
                 <input value={price}onChange={(e)=>setPrice(e.target.value)}  type="text" name="price" placeholder="価格"required/>

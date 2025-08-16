@@ -1,5 +1,6 @@
 import { useState } from "react";
 import useAuth from "../../../utils/useAuth";
+import Head from "next/head";
 
 const UpdateItem = (props) => {
   const [title, setTitle] = useState(props.singleItem.title);
@@ -39,7 +40,8 @@ const UpdateItem = (props) => {
 
   return (
     <div>
-      <h1>アイテム編集</h1>
+    <Head><title>アイテム編集</title></Head>
+      <h1 className="page-title">アイテム編集</h1>
       <form onSubmit={handleSubmit}>
         <input value={title} onChange={(e) => setTitle(e.target.value)} type="text" name="title" placeholder="アイテム名" required />
         <input value={price} onChange={(e) => setPrice(e.target.value)} type="text" name="price" placeholder="価格" required />
@@ -54,7 +56,7 @@ const UpdateItem = (props) => {
 export default UpdateItem;
 
 export const getServerSideProps = async (context) => {
-  const response = await fetch(`http://localhost:3000/api/item/${context.query.id}`);
+  const response = await fetch(`https://test-phi-one-53.vercel.app//api/item/${context.query.id}`);
   const singleItem = await response.json();
   return { props: singleItem };
 };
