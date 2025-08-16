@@ -8,7 +8,7 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault()
     try {
-      const response = await fetch("https://test-kh4y7k874-morishita-shos-projects.vercel.app//api/user/login", {
+      const response = await fetch("test-phi-one-53.vercel.app/api/user/login", {
         method: "POST",
         headers: {
           "Accept": "application/json",
