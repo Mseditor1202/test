@@ -22,7 +22,7 @@ const handleSubmit = async(e) => {
     }
 
     try{
-        const response = await fetch("https://test-phi-one-53.vercel.app//api/item/create",{
+        const response = await fetch("https://test-kh4y7k874-morishita-shos-projects.vercel.app//api/item/create",{
             method:"POST",
             headers:{
                 "Accept":"application/json",

@@ -56,7 +56,7 @@ const UpdateItem = (props) => {
 export default UpdateItem;
 
 export const getServerSideProps = async (context) => {
-  const response = await fetch(`https://test-phi-one-53.vercel.app//api/item/${context.query.id}`);
+  const response = await fetch(`https://test-kh4y7k874-morishita-shos-projects.vercel.app//api/item/${context.query.id}`);
   const singleItem = await response.json();
   return { props: singleItem };
 };
