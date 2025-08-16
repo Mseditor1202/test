@@ -31,7 +31,7 @@ const ReadSingleItem = (props) => {
 
 export const getServerSideProps = async (context) => {
   const response = await fetch(
-    `test-phi-one-53.vercel.app/api/item/${context.query.id}`
+    `https://test-3uhymtec5-morishita-shos-projects.vercel.app//api/item/${context.query.id}`
   );
   const singleItem = await response.json();
 
