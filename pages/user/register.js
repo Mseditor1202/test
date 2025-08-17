@@ -9,7 +9,7 @@ const Register = () => {
   const handleSubmit = async(e) => {
     e.preventDefault()
     try{
-        const response = await fetch("https://test-3uhymtec5-morishita-shos-projects.vercel.app/api/user/register",{
+        const response = await fetch("/api/user/register",{
             method:"POST",
             headers:{
                 "Accept":"application/json",
