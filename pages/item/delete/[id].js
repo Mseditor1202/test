@@ -8,7 +8,7 @@ const DeleteItem = (props) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`https://test-3uhymtec5-morishita-shos-projects.vercel.app//api/item/delete/${props.singleItem._id}`, {
+      const response = await fetch(`https://test-3uhymtec5-morishita-shos-projects.vercel.app/api/item/delete/${props.singleItem._id}`, {
         method: "POST",
         headers: {
           "Accept": "application/json",
@@ -48,7 +48,7 @@ export default DeleteItem;
 
 export const getServerSideProps = async (context) => {
   const response = await fetch(
-    `https://test-3uhymtec5-morishita-shos-projects.vercel.app//api/item/${context.query.id}`
+    `https://test-3uhymtec5-morishita-shos-projects.vercel.app/api/item/${context.query.id}`
   );
   const singleItem = await response.json();
 

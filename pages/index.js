@@ -32,7 +32,7 @@ const ReadAllItems = (props) => {
 export default ReadAllItems;
 
 export const getServerSideProps = async () => {
-  const response = await fetch("https://test-3uhymtec5-morishita-shos-projects.vercel.app//api/item/readall");
+  const response = await fetch("https://test-3uhymtec5-morishita-shos-projects.vercel.app/api/item/readall");
   const allItems = await response.json();
 
   return {

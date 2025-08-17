@@ -22,7 +22,7 @@ const handleSubmit = async(e) => {
     }
 
     try{
-        const response = await fetch("https://test-3uhymtec5-morishita-shos-projects.vercel.app//api/item/create",{
+        const response = await fetch("https://test-3uhymtec5-morishita-shos-projects.vercel.app/api/item/create",{
             method:"POST",
             headers:{
                 "Accept":"application/json",

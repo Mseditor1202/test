@@ -21,8 +21,8 @@ const ReadSingleItem = (props) => {
         <hr/>
         <p>{props.singleItem.description}</p>
         <div>
-          <Link href={`/item/update/${props.singleItem._id}`}><a>アイテム編集</a></Link>
-          <Link href={`/item/delete/${props.singleItem._id}`}><a>アイテム削除</a></Link>
+          <Link href={`/item/update/${props.singleItem._id}`}>アイテム編集</Link>
+          <Link href={`/item/delete/${props.singleItem._id}`}>アイテム削除</Link>
         </div>
       </div>
     </div>
@@ -31,7 +31,7 @@ const ReadSingleItem = (props) => {
 
 export const getServerSideProps = async (context) => {
   const response = await fetch(
-    `https://test-3uhymtec5-morishita-shos-projects.vercel.app//api/item/${context.query.id}`
+    `https://test-3uhymtec5-morishita-shos-projects.vercel.app/api/item/${context.query.id}`
   );
   const singleItem = await response.json();
 
