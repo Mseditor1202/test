@@ -7,8 +7,8 @@ function MyApp({ Component, pageProps }) {
   return (
     <div className="container">
       <Header/>
-      <Component {...pageProps}/>   
-      <Footer/> 
+      <Component {...pageProps}/>
+      <Footer/>
     </div>
   )
 }
