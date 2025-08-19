@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import Head from "next/head";
-import { getBaseUrl } from "../../lib/baseUrl";
+import { getBaseUrl } from "../lib/baseUrl";
 
 const ReadAllItems = (props) => {
   return (
