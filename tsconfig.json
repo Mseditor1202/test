@@ -15,7 +15,7 @@
     "incremental": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
+      "@/*": ["*"],
       "@/styles/*": ["styles/*"], //stylesフォルダのエイリアスを追加
       "@/utils/*": ["utils/*"] //utilsフォルダの追加
     }
