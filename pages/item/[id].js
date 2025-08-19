@@ -1,6 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import Head from "next/head";
+import { getBaseUrl } from "../../lib/baseUrl";
+import { headers } from "next/headers";
+import { notFound } from "next/navigation";
 
 const ReadSingleItem = (props) => {
   return (
@@ -30,13 +33,22 @@ const ReadSingleItem = (props) => {
 };
 
 export const getServerSideProps = async (context) => {
-  const response = await fetch(
-    `https://test-3uhymtec5-morishita-shos-projects.vercel.app/api/item/${context.query.id}`
-  );
-  const singleItem = await response.json();
+  const base = getBaseUrl(context.res);
 
+  const res = await fetch(`${base}/api/item/${context.query.id}`,{
+    headers: { Accept: "application/json" },
+  })
+  const ct = res.headers.get("content-type") || "";
+  if (!res.ok || !ct.includes("application/json")) {
+    if (res.status === 404) return { notFound: true };
+    const text = await res.text().catch(() => "");
+    console.error("read single API error:", res.status, ct, text.slice(0, 200));
+    return { props: { singleItem: null } };
+  }
+
+  const singleItem = await res.json();
   return {
-    props: {singleItem},
+    props: {singleItem}
   };
 };
 
