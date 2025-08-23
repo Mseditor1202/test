@@ -13,8 +13,8 @@ const ReadSingleItem = (props) => {
         <h1>個別アイテムページ</h1>
         <Image
           src={props.singleItem.image}
-          width="750"
-          height="500"
+          width={750}
+          height={500}
           alt="item-image"
         />
       </div>
