@@ -1,15 +1,26 @@
 import mongoose from "mongoose";
 
+let cached = global.mongoose;
+if (!cached) {
+  cached = global.mongoose = { conn: null, promise: null };
+}
+
 const connectDB = async () => {
-  try {
-    await mongoose.connect(
-      "mongodb+srv://webery122:BNmXZidSUpD1RCyx@cluster0.enn79e6.mongodb.net/appDataBase?retryWrites=true&w=majority&appName=Cluster0"
-    );
-    console.log("Success:Connected to MongoDB");
-  } catch (err) {
-    console.log("Failure:Connected to MongoDB");
-    throw new Error();
-  }
+  if (cached.conn) return cached.conn;
+  if (!cached.promise) {
+    const uri = process.env.MONGODB_URI;
+    if (!uri) throw new Error("❌ MONGODB_URI is not set");
+
+  cached.promise = mongoose
+  .connect(uri, {
+    dbName: process.env.DB_NAME || "appDataBase",
+    bufferCommands: false,
+  })
+  .then((m) => m);
+}
+cached.conn = await cached.promise;
+console.log("✅ Success: Connected to MongoDB");
+return cached.conn;
 };
 
 export default connectDB;
