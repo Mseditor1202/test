@@ -10,10 +10,8 @@ const auth = (handler) => {
 
         const header = req.headers.authorization || "";
         const parts = header.split(" ");
-        const token =  parts.length === 2 && parts[0] === "Bearer" ? parts[1] : null;
-
-        if(!token){
-            return res.status(401).json({message:"トークンがありません"})
+        if (scheme !== "Bearer" || !token) {
+            return res.status(401).json({ message: "トークンがありません"});
         }
 
         try{
