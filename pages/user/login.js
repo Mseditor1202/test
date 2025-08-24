@@ -9,7 +9,7 @@ export default function Login() {
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
     if (submitting) return;
     setSubmitting(true);
 
@@ -20,22 +20,19 @@ export default function Login() {
           Accept: "application/json",
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({
-          email: email,
-          password: password
-        }),
-      })
+        body: JSON.stringify({ email, password}),
+      });
 
       const ct = res.headers.get("content-type") || "";
       if (!res.ok) {
         let msg = "ログインに失敗しました";
         try {
-          if (ct.includes("application/json")){
-            const err = await res.json();
-            if (err?.message) serverMsg = errJson.message;
-          }else{
+          if (ct.includes("application/json")) {
+            const errJson = await res.json();
+            if (errJson?.message) msg = errJson.message;
+          } else {
             const errText = await res.text();
-            if (errText) msg = text.slice(0,200);
+            if (errText) msg = errText.slice(0, 200);
           }
         } catch {}
         alert(msg);
@@ -49,7 +46,7 @@ export default function Login() {
         return;
       }
 
-      localstorage.setItem("token",token);
+      localStorage.setItem("token",token);
       alert(json?.message || "ログインしました。");
       router.push("/");
     } catch (err) {

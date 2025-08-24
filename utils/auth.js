@@ -1,14 +1,15 @@
 
-import jwt from"jsonwebtoken"
-const secret_key = "nextmarket"
+import jwt from"jsonwebtoken";
+const secret_key = process.env.JWT || "dev_secret";
 
 const auth = (handler) => {
     return async(req,res) => {
-        if(req.method === "GET"){
-            return handler(req,res)
+        if(req.method === "GET" || req.method === "HEAD" || req.method === "OPTIONS") {
+            return handler(req,res);
         }
-        const authHeader = req.headers.authorization || "";
-        const parts = authHeader.split(" ");
+
+        const header = req.headers.authorization || "";
+        const parts = header.split(" ");
         const token =  parts.length === 2 && parts[0] === "Bearer" ? parts[1] : null;
 
         if(!token){
@@ -16,16 +17,16 @@ const auth = (handler) => {
         }
 
         try{
-            const decoded = jwt.verify(token,secret_key)
+            const decoded = jwt.verify(token,secret)
             if(!decoded.email){
                 return res.status(401).json({message:"トークンが正しくないので、ログインしてください"})
             }
-            req.user = { email: decoded.email };
+            req.user = { email: decoded.email, id: decoded.id };
             return handler(req,res)
-        }catch(err){
+        }catch (e) {
             return res.status(401).json({message:"トークンが正しくないので、ログインしてください"})
         }
-    }
-}
+    };
+};
 
 export default auth
