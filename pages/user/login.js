@@ -2,7 +2,7 @@ import { useState } from "react";
 import Head from "next/head";
 import { useRouter } from "next/router";
 
-const Login = () => {
+export default function Login() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -12,11 +12,12 @@ const Login = () => {
     e.preventDefault()
     if (submitting) return;
     setSubmitting(true);
+
     try {
-      const response = await fetch("/api/user/login", {
+      const res = await fetch("/api/user/login", {
         method: "POST",
         headers: {
-          "Accept": "application/json",
+          Accept: "application/json",
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
@@ -27,17 +28,17 @@ const Login = () => {
 
       const ct = res.headers.get("content-type") || "";
       if (!res.ok) {
-        let serverMsg = "ログインに失敗しました";
+        let msg = "ログインに失敗しました";
         try {
           if (ct.includes("application/json")){
-            const errJson = await res.json();
-            if (errJson?.message) serverMsg = errJson.message;
+            const err = await res.json();
+            if (err?.message) serverMsg = errJson.message;
           }else{
             const errText = await res.text();
-            if (errText) serverMsg = errText.slice(0,200);
+            if (errText) msg = text.slice(0,200);
           }
         } catch {}
-        alert(serverMsg);
+        alert(msg);
         return;
       }
 
@@ -88,4 +89,3 @@ const Login = () => {
   );
 };
 
-export default Login;
