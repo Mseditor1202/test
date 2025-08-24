@@ -11,7 +11,7 @@ const ReadAllItems = (props) => {
         {props.allItems.map(item => 
           <Link href={`/item/${item._id}`} key={item._id}>
             <div className="card">
-              <Image
+              <img 
                 src={item.image}
                 width={750}
                 height={500}
