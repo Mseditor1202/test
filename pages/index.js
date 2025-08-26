@@ -40,10 +40,11 @@ const ReadAllItems = (props) => {
 
 export default ReadAllItems;
 
-export const getServerSideProps = async () => {
-  const url = "https://test-phi-one-53.vercel.app/api/item/readall"; // ←直書き
-  const res = await fetch(url, { headers: { Accept: "application/json" } });
+export const getServerSideProps = async (context) => {
+  const base = getBaseUrl(context.req);
+  const url = `${base}/api/item/readall`;
 
+  const res = await fetch(url, { headers: { Accept: "application/json" } });
   const ct = res.headers.get("content-type") || "";
   console.log("[index] readall status:", res.status, "ct:", ct, "url:", url);
 
