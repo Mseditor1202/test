@@ -1,13 +1,25 @@
-import connectDB from "../../../utils/database"
-import { ItemModel } from "../../../utils/schemaModels"
+import connectDB from "../../../utils/database";
+import { ItemModel } from "../../../utils/schemaModels";
 
-const getSingleItem = async(req,res) => {
-    try{
-        await connectDB()
-        const singleItem = await ItemModel.findById(req.query.id)
-        return res.status(200).json({message:"アイテム読み取り成功（シングル）",singleItem: singleItem})
-    }catch(err){
-        return res.status(400).json({message:"アイテム読み取り失敗（シングル）"})
+export default async function getSingleItem(req, res) {
+  if (req.method !== "GET") {
+    res.setHeader("Allow", ["GET"]);
+    return res.status(405).end();
+  }
+
+  try {
+    await connectDB();
+    const { id } = req.query;
+
+    const item = await ItemModel.findById(id).lean(); // プレーンオブジェクトで取得
+    if (!item) {
+      return res.status(404).json({ message: "not found" });
     }
+
+    // ← ここがポイント：メッセージで包まずドキュメントをそのまま返す
+    return res.status(200).json(item);
+  } catch (err) {
+    // 不正なIDなど
+    return res.status(400).json({ message: "invalid id" });
+  }
 }
-export default getSingleItem
