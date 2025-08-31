@@ -58,7 +58,7 @@ export default UpdateItem;
 export const getServerSideProps = async (context) => {
   const origin = process.env.VERCEL_URL
     ? `https://${process.env.VERCEL_URL}`
-    : "http://${context.req.headers.host}";
+    : `http://${context.req.headers.host}`;
 
     const url = `${origin}/api/item/${context.query.id}`;
 
