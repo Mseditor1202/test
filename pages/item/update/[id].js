@@ -56,7 +56,27 @@ const UpdateItem = (props) => {
 export default UpdateItem;
 
 export const getServerSideProps = async (context) => {
-  const response = await fetch(`https://test-3uhymtec5-morishita-shos-projects.vercel.app/api/item/${context.query.id}`);
-  const singleItem = await response.json();
-  return { props: singleItem };
-};
+  const origin = process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : "http://${context.req.headers.host}";
+
+    const url = `${origin}/api/item/${context.query.id}`;
+
+    const res = await fetch(url,{
+      headers: {
+        Accept: "application/json",
+        cookie: context.req.headers.cookie || "",
+      },
+    });
+
+    const ct = res.headers.get("content-type") || "";
+    if (!res.ok || !ct.includes("application/json")) {
+      if (res.status === 404) return { notFound: true };
+      const text = await res.text().catch(() => "");
+      console.error("update page API error:", res.status, ct, text.slice(0, 200));
+      return { props: { singleItem: null }};
+    }
+
+    const singleItem = await res.json();
+    return { props: { singleItem } };
+  };
