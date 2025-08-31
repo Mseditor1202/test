@@ -3,29 +3,37 @@ import useAuth from "../../../utils/useAuth";
 import Head from "next/head";
 
 const UpdateItem = (props) => {
-  const [title, setTitle] = useState(props.singleItem.title);
-  const [price, setPrice] = useState(props.singleItem.price);
-  const [image, setImage] = useState(props.singleItem.image);
-  const [description, setDescription] = useState(props.singleItem.description);
+  const item = props.singleItem;
+
+  // 取得失敗時に安全にリターン（クライアント例外を防ぐ）
+  if (!item) return <h1>アイテムが見つかりませんでした</h1>;
+
+  const [title, setTitle] = useState(item.title ?? "");
+  const [price, setPrice] = useState(item.price ?? "");
+  const [image, setImage] = useState(item.image ?? "");
+  const [description, setDescription] = useState(item.description ?? "");
 
   const { user, loading } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(
-        `/api/item/update/${props.singleItem._id}`,
-        {
-          method: "POST",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-            authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: JSON.stringify({ title, price, image, description }),
-        }
-      );
-      const jsonData = await response.json();
+      const response = await fetch(`/api/item/update/${item._id}`, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          // 大文字の Authorization 推奨
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({ title, price, image, description }),
+      });
+
+      const ct = response.headers.get("content-type") || "";
+      const jsonData = ct.includes("application/json")
+        ? await response.json()
+        : { message: await response.text() };
+
       if (!response.ok) throw new Error(jsonData?.message || "編集に失敗しました");
       alert(jsonData.message);
     } catch (err) {
@@ -34,13 +42,11 @@ const UpdateItem = (props) => {
   };
 
   if (loading) return null;
-  if (user?.email !== props.singleItem.email) {
-    return <h1>権限がありません</h1>;
-  }
+  if (user?.email !== item.email) return <h1>権限がありません</h1>;
 
   return (
     <div>
-    <Head><title>アイテム編集</title></Head>
+      <Head><title>アイテム編集</title></Head>
       <h1 className="page-title">アイテム編集</h1>
       <form onSubmit={handleSubmit}>
         <input value={title} onChange={(e) => setTitle(e.target.value)} type="text" name="title" placeholder="アイテム名" required />
@@ -58,25 +64,26 @@ export default UpdateItem;
 export const getServerSideProps = async (context) => {
   const origin = process.env.VERCEL_URL
     ? `https://${process.env.VERCEL_URL}`
-    : `http://${context.req.headers.host}`;
+    : `http://${context.req.headers.host}`; // ← ここをバッククォートに直す！
 
-    const url = `${origin}/api/item/${context.query.id}`;
+  const url = `${origin}/api/item/${context.query.id}`;
 
-    const res = await fetch(url,{
-      headers: {
-        Accept: "application/json",
-        cookie: context.req.headers.cookie || "",
-      },
-    });
+  const res = await fetch(url, {
+    headers: {
+      Accept: "application/json",
+      // 認証が必要なら SSR→API に Cookie を引き継ぎ（未ログインHTMLを避ける）
+      cookie: context.req.headers.cookie || "",
+    },
+  });
 
-    const ct = res.headers.get("content-type") || "";
-    if (!res.ok || !ct.includes("application/json")) {
-      if (res.status === 404) return { notFound: true };
-      const text = await res.text().catch(() => "");
-      console.error("update page API error:", res.status, ct, text.slice(0, 200));
-      return { props: { singleItem: null }};
-    }
+  const ct = res.headers.get("content-type") || "";
+  if (!res.ok || !ct.includes("application/json")) {
+    if (res.status === 404) return { notFound: true };
+    const text = await res.text().catch(() => "");
+    console.error("update page API error:", res.status, ct, text.slice(0, 200));
+    return { props: { singleItem: null } };
+  }
 
-    const singleItem = await res.json();
-    return { props: { singleItem } };
-  };
+  const singleItem = await res.json();
+  return { props: { singleItem } };
+};
