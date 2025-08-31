@@ -35,7 +35,7 @@ const ReadSingleItem = ({ singleItem }) => {
 };
 
 export const getServerSideProps = async (context) => {
-  const base = getBaseUrl(context.res);
+  const base = getBaseUrl(context.req);
 
   const res = await fetch(`${base}/api/item/${context.query.id}`,{
     headers: { Accept: "application/json" },
