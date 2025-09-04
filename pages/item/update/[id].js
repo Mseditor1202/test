@@ -1,6 +1,7 @@
 import { useState } from "react";
 import useAuth from "../../../utils/useAuth";
 import Head from "next/head";
+import { notFound } from "next/navigation";
 
 const UpdateItem = (props) => {
   const item = props.singleItem;
@@ -62,28 +63,35 @@ const UpdateItem = (props) => {
 export default UpdateItem;
 
 export const getServerSideProps = async (context) => {
-  const origin = process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : `http://${context.req.headers.host}`; // ← ここをバッククォートに直す！
+  try {
+    const { id } = context.params || {};
+    if (!id || Array.isArray(id)) return { notFound: true };
 
-  const url = `${origin}/api/item/${context.query.id}`;
+    const proto = context.req.headers["X-forwarded-proto"] || "http";
+    const host = context.req.headers.host;
+    const origin = process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : `${proto}://${host}`;
 
-  const res = await fetch(url, {
-    headers: {
-      Accept: "application/json",
-      // 認証が必要なら SSR→API に Cookie を引き継ぎ（未ログインHTMLを避ける）
-      cookie: context.req.headers.cookie || "",
-    },
-  });
+      const url = `${origin}/api/item/${encodeURIComponent(id)}`;
 
-  const ct = res.headers.get("content-type") || "";
-  if (!res.ok || !ct.includes("application/json")) {
-    if (res.status === 404) return { notFound: true };
-    const text = await res.text().catch(() => "");
-    console.error("update page API error:", res.status, ct, text.slice(0, 200));
-    return { props: { singleItem: null } };
-  }
+      const res = await fetch(url, { headers: { Accept: "application/json" } });
+      const ct = (res.headers.get("content-type") || "").toLowerCase();
 
-  const singleItem = await res.json();
-  return { props: { singleItem } };
-};
+      console.log("SSR fetch:", url, res.status, ct);
+
+      if (!res.ok || !ct.startsWith("application/json")) {
+        if (res.status === 404) return { notFound: true };
+        console.error("update page API error:", res.status, ct, headers.slice(0, 200));
+        return { props: { singleItem: null } };
+      }
+
+      const singleItem = await res.json();
+      if (!singleItem || !singleItem._id) return { notFound: true };
+
+      return { props: { singleItem } };
+    } catch (e) {
+      console.error("SSR error(update page):", e);
+      return { props: { singleItem: null } };
+    }
+  };
