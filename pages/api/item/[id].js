@@ -6,6 +6,7 @@ import jwt from "jsonwebtoken";
 
 const SECRET = process.env.JWT_SECRET;
 
+console.log();
 export default async function getSingleItem(req, res) {
   if (req.method !== "GET") {
     res.setHeader("Allow", ["GET"]);
