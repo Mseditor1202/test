@@ -1,7 +1,7 @@
 import connectDB from "../../../utils/database";
 import { ItemModel } from "../../../utils/schemaModels";
 import mongoose from "mongoose";
-import cookie from "cookie";
+import { parse } from "cookie";
 import jwt from "jsonwebtoken";
 
 const SECRET = process.env.JWT_SECRET;
@@ -29,7 +29,7 @@ export default async function getSingleItem(req, res) {
       if (!id || Array.isArray(id) || !mongoose.Types.ObjectId.isValid(id)) {
         return res.status(400).json({ message: "invalid id" });
       }
-      
+
       if (item.email !== payload.email) {
         return res.status(404).json({ message: "not found" });
       }
