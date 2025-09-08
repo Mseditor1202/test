@@ -67,22 +67,22 @@ export const getServerSideProps = async (context) => {
     const { id } = context.params || {};
     if (!id || Array.isArray(id)) return { notFound: true };
 
-    const proto = context.req.headers["X-forwarded-proto"] || "http";
-    const host = context.req.headers.host;
-    const origin = process.env.VERCEL_URL
+  　　const origin = process.env.VERCEL_URL
       ? `https://${process.env.VERCEL_URL}`
-      : `${proto}://${host}`;
+      : `http://${context.req.headers.host}`;
 
       const url = `${origin}/api/item/${encodeURIComponent(id)}`;
 
       const res = await fetch(url, { headers: { Accept: "application/json" } });
+      
       const ct = (res.headers.get("content-type") || "").toLowerCase();
 
       console.log("SSR fetch:", url, res.status, ct);
 
       if (!res.ok || !ct.startsWith("application/json")) {
         if (res.status === 404) return { notFound: true };
-        console.error("update page API error:", res.status, ct, headers.slice(0, 200));
+        const head = await res.text().catch(() => "");
+        console.error("update page API error:", res.status, ct, head.slice(0, 200));
         return { props: { singleItem: null } };
       }
 
