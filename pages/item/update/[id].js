@@ -1,7 +1,6 @@
 import { useState } from "react";
 import useAuth from "../../../utils/useAuth";
 import Head from "next/head";
-import { notFound } from "next/navigation";
 
 const UpdateItem = (props) => {
   const item = props.singleItem;
@@ -67,31 +66,42 @@ export const getServerSideProps = async (context) => {
     const { id } = context.params || {};
     if (!id || Array.isArray(id)) return { notFound: true };
 
-  　　const origin = process.env.VERCEL_URL
+    const origin = process.env.VERCEL_URL
       ? `https://${process.env.VERCEL_URL}`
       : `http://${context.req.headers.host}`;
 
       const url = `${origin}/api/item/${encodeURIComponent(id)}`;
 
-      const res = await fetch(url, { headers: { Accept: "application/json" } });
-      
-      const ct = (res.headers.get("content-type") || "").toLowerCase();
+      const res = await fetch(url, {
+         headers: { 
+          Accept: "application/json",
+          cookie: context.req.headers.cookie || "",
+         }, 
+        });
 
-      console.log("SSR fetch:", url, res.status, ct);
-
-      if (!res.ok || !ct.startsWith("application/json")) {
+        if (res.status === 401) {
+          return {
+            redirect: {
+              destination: `/login?next=${encodeURIComponent(context.resolvedUrl)}`,
+              permanent: false,
+            },
+          };
+        }
         if (res.status === 404) return { notFound: true };
+
+      const ct = (res.headers.get("content-type") || "").toLowerCase();
+      if (!ct.startsWith("application/json")) {
         const head = await res.text().catch(() => "");
         console.error("update page API error:", res.status, ct, head.slice(0, 200));
         return { props: { singleItem: null } };
       }
+      const data = await res.json();
+      const singleItem = data?.item ?? data;
 
-      const singleItem = await res.json();
       if (!singleItem || !singleItem._id) return { notFound: true };
-
-      return { props: { singleItem } };
-    } catch (e) {
-      console.error("SSR error(update page):", e);
-      return { props: { singleItem: null } };
-    }
+          return { props: { singleItem } };
+      } catch (e) {
+        console.error("SSR error(update page):", e);
+        return { props: { singleItem: null } };
+      }
   };
