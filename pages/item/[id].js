@@ -4,7 +4,7 @@ import Head from "next/head";
 import { getBaseUrl } from "../../lib/baseUrl";
 
 const ReadSingleItem = ({ singleItem }) => {
-  if (!singleItem) { 
+  if (!singleItem) {
     return <div>アイテムが見つかりませんでした。</div>;
   }
   
@@ -37,9 +37,22 @@ const ReadSingleItem = ({ singleItem }) => {
 export const getServerSideProps = async (context) => {
   const base = getBaseUrl(context.req);
 
-  const res = await fetch(`${base}/api/item/${context.query.id}`,{
-    headers: { Accept: "application/json" },
-  })
+  const res = await fetch(`${bese}/api/item/${encodeURIComponent(context.query.id)}`,{
+    headers: {
+      Accept: "application/json",
+      cookie: context.req.headers.cookie || "",
+    },
+  });
+
+  if (res.status === 401) {
+    return {
+      redirect: {
+        destination: `/login?next=${encodeURIComponent(context.resolvedUrl)}`,
+        permanent: false,
+      },
+    };
+  }
+
   const ct = res.headers.get("content-type") || "";
   if (!res.ok || !ct.includes("application/json")) {
     if (res.status === 404) return { notFound: true };
@@ -48,9 +61,10 @@ export const getServerSideProps = async (context) => {
     return { props: { singleItem: null } };
   }
 
-  const singleItem = await res.json();
+  const data = await res.json();
+  const singleItem = data?.item ?? data;
   return {
-    props: {singleItem}
+    props: { singleItem }
   };
 };
 
