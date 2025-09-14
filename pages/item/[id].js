@@ -37,7 +37,7 @@ const ReadSingleItem = ({ singleItem }) => {
 export const getServerSideProps = async (context) => {
   const base = getBaseUrl(context.req);
 
-  const res = await fetch(`${bese}/api/item/${encodeURIComponent(context.query.id)}`,{
+  const res = await fetch(`${base}/api/item/${encodeURIComponent(context.query.id)}`,{
     headers: {
       Accept: "application/json",
       cookie: context.req.headers.cookie || "",
