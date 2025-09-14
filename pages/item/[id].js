@@ -44,10 +44,11 @@ export const getServerSideProps = async (context) => {
     },
   });
 
+  const LOGIN_PATH = "/user/login"; 
   if (res.status === 401) {
     return {
       redirect: {
-        destination: `/login?next=${encodeURIComponent(context.resolvedUrl)}`,
+        destination: `${LOGIN_PATH}?next=${encodeURIComponent(context.resolvedUrl)}`,
         permanent: false,
       },
     };

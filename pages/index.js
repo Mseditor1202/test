@@ -44,7 +44,7 @@ export const getServerSideProps = async (context) => {
   const base = getBaseUrl(context.req);
   const url = `${base}/api/item/readall`;
 
-  const res = await fetch(url, { headers: { Accept: "application/json" } });
+  const res = await fetch(url, { headers: { Accept: "application/json", cookie: context.req.headers.cookie || "" } });
   const ct = res.headers.get("content-type") || "";
   console.log("[index] readall status:", res.status, "ct:", ct, "url:", url);
 
