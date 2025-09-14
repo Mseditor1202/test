@@ -7,6 +7,18 @@ import jwt from "jsonwebtoken";
 
 const SECRET = process.env.JWT_SECRET;
 
+function extractEmail(payload) {
+  return (
+    payload?.email ??
+    payload?.user?.email ??
+    payload?.data?.email ??
+    ""
+  );
+}
+function normEmail(e) {
+  return stringify(e || "").trim().toLowerCase();
+}
+
 export default async function getSingleItem(req, res) {
   if (req.method !== "GET") {
     res.setHeader("Allow", ["GET"]);
@@ -15,7 +27,10 @@ export default async function getSingleItem(req, res) {
 
   // 1) 認証（DB接続より先にやって fail fast）
   const cookies = parseCookie(req.headers.cookie || "");
-  const token = cookies.token || "";
+  const cookiesToken = cookies.token || "";
+  const auth = req.headers.authorization || "";
+  const bearerToken = auth.startsWith("Bearer ") ? auth.slice(7) : "";
+  const token = bearerToken || cookies.token;
 
   if (!token) {
     return res.status(401).json({ message: "unauthorized" });
@@ -48,14 +63,22 @@ export default async function getSingleItem(req, res) {
       return res.status(404).json({ message: "not found" });
     }
 
-    // 5) 所有者チェック
-    if (item.email !== payload.email) {
-      // 区別したくない運用なら 404、区別したいなら 403 に変更
+    const ownerEmail = normEmail(item.email);
+    const viewerEmail = normEmail(extractEmail(payload));
+
+    // 開発中はデバッグを出して原因を掴みやすく
+    if (process.env.NODE_ENV !== "production") {
+      const mask = (e) => (e ? `${e.slice(0,2)}***@${(e.split("@")[1]||"")}` : "(none)");
+      console.log("[owner-check]", { owner: mask(ownerEmail), viewer: mask(viewerEmail) });
+    }
+
+    if (!viewerEmail || ownerEmail !== viewerEmail) {
+      // 情報非開示運用なら 404 のままでOK（デバッグ中は一時的に403でも可）
       return res.status(404).json({ message: "not found" });
       // return res.status(403).json({ message: "forbidden" });
     }
 
-    // 6) レスポンス形は一貫させる（フロントと合わせて）
+    // ---- レスポンス（フロントと合わせて { item } で返す）----
     return res.status(200).json({ item });
   } catch (err) {
     console.error("API /item/[id] error:", err);
