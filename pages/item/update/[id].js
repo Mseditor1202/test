@@ -1,107 +1,104 @@
-import { useState } from "react";
-import useAuth from "../../../utils/useAuth";
-import Head from "next/head";
+// pages/item/update/[id].js
+import { parse } from "cookie";
+import jwt from "jsonwebtoken";
+import { useEffect, useState } from "react";
 
-const UpdateItem = (props) => {
-  const item = props.singleItem;
+export async function getServerSideProps(ctx) {
+  const { id } = ctx.params;
+  const cookies = parse(ctx.req.headers.cookie || "");
+  const token = cookies.token || cookies.jwt || "";
+  if (!token) {
+    return { redirect: { destination: `/user/login?next=${encodeURIComponent(ctx.resolvedUrl)}`, permanent: false } };
+  }
+  try {
+    jwt.verify(token, process.env.JWT_SECRET);
+  } catch {
+    return { redirect: { destination: `/user/login?next=${encodeURIComponent(ctx.resolvedUrl)}`, permanent: false } };
+  }
+  return { props: { id } };
+}
 
-  // 取得失敗時に安全にリターン（クライアント例外を防ぐ）
-  if (!item) return <h1>アイテムが見つかりませんでした</h1>;
+export default function UpdateItemPage({ id }) {
+  const [item, setItem] = useState(null);
+  const [msg, setMsg] = useState("");
+  const [err, setErr] = useState("");
 
-  const [title, setTitle] = useState(item.title ?? "");
-  const [price, setPrice] = useState(item.price ?? "");
-  const [image, setImage] = useState(item.image ?? "");
-  const [description, setDescription] = useState(item.description ?? "");
+  const READ_API = `/api/item/${id}`;          // あなたのGET APIに合わせて必要なら変更
+  const UPDATE_API = `/api/item/update/${id}`;
 
-  const { user, loading } = useAuth();
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch(READ_API, { credentials: "same-origin" });
+        if (res.status === 401) {
+          location.href = `/user/login?next=${encodeURIComponent(location.pathname + location.search)}`;
+          return;
+        }
+        if (!res.ok) throw new Error(await res.text());
+        const data = await res.json();
+        setItem(data.item || data.data || data);
+      } catch (e) {
+        setErr(e.message || "読み込みに失敗しました");
+      }
+    })();
+  }, [READ_API]);
 
-  const handleSubmit = async (e) => {
+  async function onSubmit(e) {
     e.preventDefault();
+    setMsg(""); setErr("");
+    const fd = new FormData(e.currentTarget);
+    const body = {
+      title: String(fd.get("title") || ""),
+      // price はAPI側で String 化するのでここはそのまま
+      price: fd.get("price") ?? "",
+      image: String(fd.get("image") || ""),
+      description: String(fd.get("description") || ""),
+    };
     try {
-      const response = await fetch(`/api/item/update/${item._id}`, {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-          // 大文字の Authorization 推奨
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({ title, price, image, description }),
+      const res = await fetch(UPDATE_API, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify(body),
       });
-
-      const ct = response.headers.get("content-type") || "";
-      const jsonData = ct.includes("application/json")
-        ? await response.json()
-        : { message: await response.text() };
-
-      if (!response.ok) throw new Error(jsonData?.message || "編集に失敗しました");
-      alert(jsonData.message);
-    } catch (err) {
-      alert(err.message || "アイテム編集失敗");
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.message || "更新に失敗しました");
+      setItem(data.item);     // ★更新後のドキュメントで即反映
+      setMsg("更新しました");
+    } catch (e) {
+      setErr(e.message || "通信エラー");
     }
-  };
+  }
 
-  if (loading) return null;
-  if (user?.email !== item.email) return <h1>権限がありません</h1>;
+  if (!item && !err) return <p>読み込み中...</p>;
+  if (err) return <p style={{ color: "crimson" }}>{err}</p>;
 
   return (
-    <div>
-      <Head><title>アイテム編集</title></Head>
-      <h1 className="page-title">アイテム編集</h1>
-      <form onSubmit={handleSubmit}>
-        <input value={title} onChange={(e) => setTitle(e.target.value)} type="text" name="title" placeholder="アイテム名" required />
-        <input value={price} onChange={(e) => setPrice(e.target.value)} type="text" name="price" placeholder="価格" required />
-        <input value={image} onChange={(e) => setImage(e.target.value)} type="text" name="image" placeholder="画像" required />
-        <textarea value={description} onChange={(e) => setDescription(e.target.value)} name="description" rows={15} placeholder="商品説明" required />
-        <button>編集</button>
-      </form>
-    </div>
+    <form onSubmit={onSubmit} className="max-w-xl mx-auto space-y-4">
+      <h1 className="text-2xl font-bold">編集: {item?._id}</h1>
+
+      <label className="block">
+        <span>タイトル</span>
+        <input name="title" defaultValue={item?.title || ""} className="w-full border p-2 rounded" />
+      </label>
+
+      <label className="block">
+        <span>価格</span>
+        <input name="price" type="number" defaultValue={item?.price ?? ""} className="w-full border p-2 rounded" />
+      </label>
+
+      <label className="block">
+        <span>画像URL</span>
+        <input name="image" defaultValue={item?.image || ""} className="w-full border p-2 rounded" />
+      </label>
+
+      <label className="block">
+        <span>説明</span>
+        <textarea name="description" defaultValue={item?.description || ""} className="w-full border p-2 rounded" rows={4} />
+      </label>
+
+      <button type="submit" className="px-4 py-2 rounded bg-black text-white">更新</button>
+      {msg && <p style={{ color: "seagreen" }}>{msg}</p>}
+    </form>
   );
-};
-
-export default UpdateItem;
-
-export const getServerSideProps = async (context) => {
-  try {
-    const { id } = context.params || {};
-    if (!id || Array.isArray(id)) return { notFound: true };
-
-    const origin = process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : `http://${context.req.headers.host}`;
-
-      const url = `${origin}/api/item/${encodeURIComponent(id)}`;
-
-      const res = await fetch(url, {
-         headers: { 
-          Accept: "application/json",
-          cookie: context.req.headers.cookie || "",
-         }, 
-        });
-
-        if (res.status === 401) {
-          return {
-            redirect: {
-              destination: `/login?next=${encodeURIComponent(context.resolvedUrl)}`,
-              permanent: false,
-            },
-          };
-        }
-        if (res.status === 404) return { notFound: true };
-
-      const ct = (res.headers.get("content-type") || "").toLowerCase();
-      if (!ct.startsWith("application/json")) {
-        const head = await res.text().catch(() => "");
-        console.error("update page API error:", res.status, ct, head.slice(0, 200));
-        return { props: { singleItem: null } };
-      }
-      const data = await res.json();
-      const singleItem = data?.item ?? data;
-
-      if (!singleItem || !singleItem._id) return { notFound: true };
-          return { props: { singleItem } };
-      } catch (e) {
-        console.error("SSR error(update page):", e);
-        return { props: { singleItem: null } };
-      }
-  };
+}

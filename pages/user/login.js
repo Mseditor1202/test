@@ -8,6 +8,11 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  const getSafeNext = () => {
+    const raw = typeof router.query.next === "string" ? router.query.next : "/";
+    return raw.startsWith("/") && !raw.startsWith("//") ? raw : "/";
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (submitting) return;
@@ -16,11 +21,12 @@ export default function Login() {
     try {
       const res = await fetch("/api/user/login", {
         method: "POST",
+        credentials: "include",
         headers: {
           Accept: "application/json",
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password}),
+        body: JSON.stringify({ email, password }),
       });
 
       const ct = res.headers.get("content-type") || "";
@@ -39,18 +45,17 @@ export default function Login() {
         return;
       }
 
-      const json = ct.includes("application/json") ? await res.json() :{};
-      const token = json?.token;
-      if (!token) {
-        alert("サーバーからトークンを受け取れませんでした。");
-        return;
-      }
-
-      localStorage.setItem("token",token);
-      alert(json?.message || "ログインしました。");
-      router.push("/");
+      let msg = "ログインしました";
+      try {
+        if (ct.includes("application/json")) {
+          const data = await res.json();
+          if (data?.message) msg = data.message;
+        }
+      } catch {}
+      alert(msg);
+      router.replace(getSafeNext());
     } catch (err) {
-      alert("ネットワークエラー：ログイン失敗")
+      alert("ネットワークエラー：ログイン失敗");
     } finally {
       setSubmitting(false);
     }
@@ -77,12 +82,10 @@ export default function Login() {
           placeholder="パスワード"
           required
         />
-
         <button disabled={submitting}>
           {submitting ? "送信中..." : "ログイン"}
-          </button>
+        </button>
       </form>
     </div>
   );
-};
-
+}
